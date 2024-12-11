@@ -9,7 +9,7 @@ import numpy as np
 
 
 def get_metada_PGM(
-                    input_file                                                                       :str,
+                    input_file                                                                      :str,
                     metadata_fields                                                                 :list,
                     header_size                                                                     :int = 32
                 ):
@@ -37,16 +37,16 @@ def get_metada_PGM(
 
 
 def pgm2array(
-        input_files                                                                                       : str, 
-        file_extension                                                                              : str      = '.pgm',
+        input_files                                                                                     : str, 
+        file_extension                                                                                  : str      = '.pgm',
         ):
-    pgm_files = glob.glob(input_files+"*"+file_extension)                                     
+    pgm_files               = glob.glob(input_files+"*"+file_extension)                                     
     pgm_files.sort()
-    slices=[cv2.imread(file, cv2.IMREAD_GRAYSCALE) for file in pgm_files]
+    slices                  = [cv2.imread(file, cv2.IMREAD_GRAYSCALE) for file in pgm_files]
 
-    image_array = np.dstack(slices)
-    image_array=np.rot90(image_array, 1, axes=(1, 0))                                               # rotation in plane XY for coherence with Collin's code
-    image_shape = slices[0].shape
+    image_array             = np.dstack(slices)
+    image_array             = np.rot90(image_array, 1, axes=(1, 0))                                                   # rotation in plane XY for coherence with Collin's code
+    image_shape             = slices[0].shape
 
 
     return pgm_files, image_array
@@ -77,18 +77,18 @@ def array2vti(
 
 
 def get_z_metadata_flatten_image(pgm_files, metadata, image_array): 
-    z_abscisse_scd_image = get_metada_PGM(
+    z_abscisse_scd_image    = get_metada_PGM(
                                         input_file             = pgm_files[1],
                                         metadata_fields   = ["Slice_Location"]
                                     )
 
-    metadata[0] = "{0:.3f}".format(abs(z_abscisse_scd_image[0]-metadata[0]))
-    metadata[0] = float(metadata[0])
+    metadata[0]             = "{0:.3f}".format(abs(z_abscisse_scd_image[0]-metadata[0]))
+    metadata[0]             = float(metadata[0])
 
 
-    image_shape         = image_array.shape
-    pixel_size          = [metadata[1], metadata[1], metadata[0]]
-    image_pos           = [ps/2 for ps in pixel_size]                                                               # center of the first voxel of the first slice
-    flatten_image_array = np.reshape(image_array, image_shape).flatten(order="F")
+    image_shape             = image_array.shape
+    pixel_size              = [metadata[1], metadata[1], metadata[0]]
+    image_pos               = [ps/2 for ps in pixel_size]                                                   # center of the first voxel of the first slice
+    flatten_image_array     = np.reshape(image_array, image_shape).flatten(order="F")
     return image_shape, pixel_size, image_pos, flatten_image_array
 
