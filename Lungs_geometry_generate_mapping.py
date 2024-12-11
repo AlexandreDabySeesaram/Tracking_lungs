@@ -10,13 +10,11 @@ import myVTKPythonLibrary as myvtk
 
 #%% Define initial mesh (that hold all mappings)
 
-mesh_LL=fenics.Mesh("Initial_Config/mesh_LL.xml")
-mesh_RL=fenics.Mesh("Initial_Config/mesh_RL.xml")
+mesh_LL                                                     =fenics.Mesh("Initial_Config/mesh_LL.xml")
+mesh_RL                                                     =fenics.Mesh("Initial_Config/mesh_RL.xml")
 
-
-
-regul_level = 0.0
-regul_type = "discrete-equilibrated-tractions-normal"
+regul_level                                                 = 0.0
+regul_type                                                  = "discrete-equilibrated-tractions-normal"
 
 if any([_ in regul_type for _ in ["linear", "simple"]]):
     regul_model = "hooke"
@@ -57,61 +55,60 @@ destination_path = "./"                                                         
 def reduced_kiematics(patient,lung, mesh, tol=1e-6):
     prefix = "PA"+str(patient)
     dwarp.warp(
-            working_folder = destination_path+prefix,
-            working_basename = "mapping_reduced_kinematics"+'_'+prefix+'_'+lung,
-            images_folder = destination_path+prefix,
-            images_basename = "Image_Binary_blurred",
-            images_ext = "vti",
-            mesh=mesh,
-            images_quadrature = 3,
-            n_iter_max = 500,
-            regul_poisson = 0.3,
-            tangent_type = "Idef",
-            nonlinearsolver = "reduced_kinematic_newton",
-            regul_type=regul_type,
-            regul_model=regul_model,
-            regul_level=regul_level,
-            relax_type="constant",
-            tol_dU=tol,
-            continue_after_fail = 1,
-            write_VTU_files=True,
-            write_VTU_files_with_preserved_connectivity=True,
-            initialize_reduced_U_from_file = True,
-            initialize_reduced_U_filename = "initial_scaling_"+lung+".dat",
-            print_iterations=1) 
+            working_folder                              = destination_path+prefix,
+            working_basename                            = "mapping_reduced_kinematics"+'_'+prefix+'_'+lung,
+            images_folder                               = destination_path+prefix,
+            images_basename                             = "Image_Binary_blurred",
+            images_ext                                  = "vti",
+            mesh                                        = mesh,
+            images_quadrature                           = 3,
+            n_iter_max                                  = 500,
+            regul_poisson                               = 0.3,
+            tangent_type                                = "Idef",
+            nonlinearsolver                             = "reduced_kinematic_newton",
+            regul_type                                  = regul_type,
+            regul_model                                 = regul_model,
+            regul_level                                 = regul_level,
+            relax_type                                  = "constant",
+            tol_dU                                      = tol,
+            continue_after_fail                         = 1,
+            write_VTU_files                             = True,
+            write_VTU_files_with_preserved_connectivity = True,
+            initialize_reduced_U_from_file              = True,
+            initialize_reduced_U_filename               = "initial_scaling_"+lung+".dat",
+            print_iterations                            =1) 
 
 
 def tracking(patient,lung, mesh, tol=1e-3):
     prefix = "PA"+str(patient)
     dwarp.warp(
-            working_folder = destination_path+prefix,
-            working_basename = "mapping"+'_'+prefix+'_'+lung,
-            images_folder = destination_path+prefix,
-            images_basename = "Image_Binary_blurred",
-            images_ext = "vti",
-            mesh=mesh,
-            n_iter_max = 1000,
-            tangent_type = "Idef",
-            nonlinearsolver = "newton",
-            regul_types = [ "continuous-hyperelastic"], #"discrete-mesh",  "continuous-equilibrated", "discrete-tractions-normal", "continuous-equilibrated", "discrete-tractions-tangential", "continuous-hyperelastic" "continuous-hyperelastic",
-            regul_model = "ogdenciarletgeymonatneohookeanmooneyrivlin",
-            # regul_level = 0.0001,
-            regul_levels = [0.1],
-            regul_poisson = 0.3,
-            images_quadrature = 6,
-            images_quadrature_from = "points_count",
-            relax_type = "backtracking",
-            tol_dU=tol,
-            write_VTU_files=True,
-            write_VTU_files_with_preserved_connectivity=True,
-            images_char_func = True,
-            initialize_U_from_file = 1,
-            initialize_U_folder = destination_path+prefix, 
-            initialize_U_basename = "mapping_reduced_kinematics"+'_'+prefix+'_'+lung,
-            initialize_U_ext = "vtu",
-            initialize_U_array_name = "displacement",
-            initialize_U_method = "dofs_transfer", # dofs_transfer, interpolation, projection
-            print_iterations=1) # dofs_transfer, interpolation, projection)
+            working_folder                              = destination_path+prefix,
+            working_basename                            = "mapping"+'_'+prefix+'_'+lung,
+            images_folder                               = destination_path+prefix,
+            images_basename                             = "Image_Binary_blurred",
+            images_ext                                  = "vti",
+            mesh                                        = mesh,
+            n_iter_max                                  = 1000,
+            tangent_type                                = "Idef",
+            nonlinearsolver                             = "newton",
+            regul_types                                 = [ "continuous-hyperelastic"], #"discrete-mesh",  "continuous-equilibrated", "discrete-tractions-normal", "continuous-equilibrated", "discrete-tractions-tangential", "continuous-hyperelastic" "continuous-hyperelastic",
+            regul_model                                 = "ogdenciarletgeymonatneohookeanmooneyrivlin",
+            regul_levels                                = [0.1],
+            regul_poisson                               = 0.3,
+            images_quadrature                           = 6,
+            images_quadrature_from                      = "points_count",
+            relax_type                                  = "backtracking",
+            tol_dU                                      = tol,
+            write_VTU_files                             = True,
+            write_VTU_files_with_preserved_connectivity = True,
+            images_char_func                            = True,
+            initialize_U_from_file                      = 1,
+            initialize_U_folder                         = destination_path+prefix, 
+            initialize_U_basename                       = "mapping_reduced_kinematics"+'_'+prefix+'_'+lung,
+            initialize_U_ext                            = "vtu",
+            initialize_U_array_name                     = "displacement",
+            initialize_U_method                         = "dofs_transfer", # dofs_transfer, interpolation, projection
+            print_iterations                            = 1) # dofs_transfer, interpolation, projection)
 
 
 N_patients = 9
@@ -133,13 +130,13 @@ for lung in Lungs:
     initial_scaling(mesh, lung, coef =-0.2)
     for patient in Patients_Ids:
         reduced_kiematics(
-                patient = patient,
-                lung = lung,
-                mesh = mesh,
-                tol=1e-6)
+                patient                                 = patient,
+                lung                                    = lung,
+                mesh                                    = mesh,
+                tol                                     = 1e-6)
 
         tracking(
-                patient = patient,
-                lung = lung,
-                mesh = mesh,
-                tol=1e-6)
+                patient                                 = patient,
+                lung                                    = lung,
+                mesh                                    = mesh,
+                tol                                     = 1e-6)
