@@ -28,7 +28,7 @@ else:
 # The objective is to create an initial scaled mapping that lies within all possible rib cages to help with tracking
 def initial_scaling(mesh, lung, coef =-0.4):
     saving_name_initial_scalaing = "initial_scaling_"+lung+".dat"
-    alpha = coef                                                                      # Scaling factor
+    alpha = coef                                                                                # Scaling factor
 
     dim = 3
     x = dolfin.SpatialCoordinate(mesh)
@@ -36,7 +36,7 @@ def initial_scaling(mesh, lung, coef =-0.4):
             "dx",
             domain=mesh)
 
-    center_gravity = [0,0,0]                                                            # Center of mass coordinates
+    center_gravity = [0,0,0]                                                                    # Center of mass coordinates
     for k_dim in range(dim):
         center_gravity[k_dim] = dolfin.assemble(x[k_dim]*dV)/dolfin.assemble(1*dV)
 
@@ -45,12 +45,12 @@ def initial_scaling(mesh, lung, coef =-0.4):
     z_mid = center_gravity[2]
 
     ## Write down reduced_kinematics initialisation file
-    reduced_disp_initial_scaling = alpha*np.array([[-x_mid,-y_mid,-z_mid,1,1,1]])       # Reduced displacement for the 6 modes reduced-kinematics
-    np.savetxt(saving_name_initial_scalaing, reduced_disp_initial_scaling)                     # Save the reduced displacements
+    reduced_disp_initial_scaling = alpha*np.array([[-x_mid,-y_mid,-z_mid,1,1,1]])               # Reduced displacement for the 6 modes reduced-kinematics
+    np.savetxt(saving_name_initial_scalaing, reduced_disp_initial_scaling)                      # Save the reduced displacements
 
 #%% Define tracking functions
 
-destination_path = "./"                                                             #Root path for patients solution folders
+destination_path = "./"                                                                         #Root path for patients solution folders
 
 def reduced_kiematics(patient,lung, mesh, tol=1e-6):
     prefix = "PA"+str(patient)
@@ -91,7 +91,7 @@ def tracking(patient,lung, mesh, tol=1e-3):
             n_iter_max                                  = 1000,
             tangent_type                                = "Idef",
             nonlinearsolver                             = "newton",
-            regul_types                                 = [ "continuous-hyperelastic"], #"discrete-mesh",  "continuous-equilibrated", "discrete-tractions-normal", "continuous-equilibrated", "discrete-tractions-tangential", "continuous-hyperelastic" "continuous-hyperelastic",
+            regul_types                                 = [ "continuous-hyperelastic"],         #"discrete-mesh",  "continuous-equilibrated", "discrete-tractions-normal", "continuous-equilibrated", "discrete-tractions-tangential", "continuous-hyperelastic" "continuous-hyperelastic",
             regul_model                                 = "ogdenciarletgeymonatneohookeanmooneyrivlin",
             regul_levels                                = [0.1],
             regul_poisson                               = 0.3,
@@ -107,8 +107,8 @@ def tracking(patient,lung, mesh, tol=1e-3):
             initialize_U_basename                       = "mapping_reduced_kinematics"+'_'+prefix+'_'+lung,
             initialize_U_ext                            = "vtu",
             initialize_U_array_name                     = "displacement",
-            initialize_U_method                         = "dofs_transfer", # dofs_transfer, interpolation, projection
-            print_iterations                            = 1) # dofs_transfer, interpolation, projection)
+            initialize_U_method                         = "dofs_transfer",                      # dofs_transfer, interpolation, projection
+            print_iterations                            = 1)                                    # dofs_transfer, interpolation, projection)
 
 
 N_patients = 9
