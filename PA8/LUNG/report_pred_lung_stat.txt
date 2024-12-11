@@ -1,0 +1,43 @@
+Start : 11/09/2023 15:22:45
+
+Volume both lungs : 3.68 L
+Both lungs healthy : 68.66 %
+Both lungs ground glass : 0.17 %
+Both lungs fibrosis : 26.62 %
+Both lungs emphysema : 1.46 %
+Both lungs honeycombing : 3.09 %
+
+Both lungs healthy : 2.5284 L
+Both lungs ground glass : 0.0064 L
+Both lungs fibrosis : 0.9801 L
+Both lungs emphysema : 0.0539 L
+Both lungs honeycombing : 0.1136 L
+
+-----------------------------
+
+RIGHT healthy : 67.15 %
+RIGHT ground glass : 0.24 %
+RIGHT fibrosis : 27.74 %
+RIGHT emphysema : 2.45 %
+RIGHT honeycombing : 2.42 %
+
+RIGHT healthy : 1.3109 L
+RIGHT ground glass : 0.0046 L
+RIGHT fibrosis : 0.5415 L
+RIGHT emphysema : 0.0479 L
+RIGHT honeycombing : 0.0473 L
+
+LEFT healthy : 70.37 %
+LEFT ground glass : 0.1 %
+LEFT fibrosis : 25.35 %
+LEFT emphysema : 0.35 %
+LEFT honeycombing : 3.83 %
+
+LEFT healthy : 1.2175 L
+LEFT ground glass : 0.0018 L
+LEFT fibrosis : 0.4386 L
+LEFT emphysema : 0.006 L
+LEFT honeycombing : 0.0663 L
+
+End : 11/09/2023 15:22:49
+ 

@@ -1,0 +1,8 @@
+*.pgm
+*.DS_Store
+*.vti
+*.vtu
+*.pdf
+*.dat
+*.xml
+__pycache__
