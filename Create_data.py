@@ -20,8 +20,9 @@ Vti_Binary_PGM                      = False         # check +- 1 on pixels
 Vti_RAW_PGM                         = False
 Blur_binary_vti                     = False
 Clean_BINARY_PGM                    = False
-Copy_initial_image                  = True
-
+Copy_initial_image                  = False
+Downscale_vti                       = False
+Threshold_blurred_images            = True
 original_dir = os.getcwd()                          # remember original path
 
 
@@ -117,9 +118,131 @@ if Blur_binary_vti:
         writer.SetInputConnection(gaussian.GetOutputPort())
         writer.Write()
 
+
+
+def get_values_segmented_images(patient, blurred = False):
+
+    from vtk.util.numpy_support import vtk_to_numpy
+    import numpy as np
+
+
+    prefix = "PA"+str(patient)
+    input_image = prefix+"/"+prefix+ "_Binary.vti"
+    # Load the binary segmented VTI file
+    reader = vtk.vtkXMLImageDataReader()
+    reader.SetFileName(input_image)
+    reader.Update()
+
+    # Get the image data
+    image_data = reader.GetOutput()
+
+    # Extract scalar data
+    scalars = image_data.GetPointData().GetScalars()
+
+    # Convert VTK scalars to a Numpy array
+    scalar_array = vtk_to_numpy(scalars)
+
+    # Get all unique values
+    unique_values = np.unique(scalar_array)
+
+    print(f"Unique values in the image: {unique_values}")
+
+
+if Threshold_blurred_images:
+    import vtk
+    for i in Patients_Ids:
+        prefix = "PA"+str(i)
+        input_image = prefix+"/Image_Binary_blurred_01.vti"
+        output_image = prefix+"/"+prefix+"_Image_Binary_thrshd_01.vti"
+        # Load the VTI file
+        reader = vtk.vtkXMLImageDataReader()
+        reader.SetFileName(input_image)
+        reader.Update()
+
+        # Get the image data
+        image_data = reader.GetOutput()
+
+        # Apply a threshold to isolate the blurred zone
+        threshold_filter = vtk.vtkImageThreshold()
+        threshold_filter.SetInputData(image_data)
+
+        # Set the threshold values based on your blurred range
+        # These values depend on the range of values introduced by the Gaussian filter
+        # Adjust the ranges as necessary (example: 0.1 to 0.9 for blurred values)
+        threshold_filter.ThresholdBetween(1, 70)
+
+        # Assign a high constant value to the blurred zone
+        new_value = 500.0  # Replace with your desired high value
+        threshold_filter.SetInValue(new_value)  # Value for the blurred zone
+        threshold_filter.SetOutValue(0)         # Value for other zones (optional)
+        threshold_filter.ReplaceInOn()
+        threshold_filter.ReplaceOutOn()
+        threshold_filter.Update()
+
+        # Get the modified output
+        output_data = threshold_filter.GetOutput()
+
+        # Save the modified data back to a .vti file
+        writer = vtk.vtkXMLImageDataWriter()
+        writer.SetFileName(output_image)
+        writer.SetInputData(output_data)
+        writer.Write()
+
+
 if Copy_initial_image:
 
     for i in Patients_Ids:
         prefix = "PA"+str(i)
-        cp_command_images = "cp PA1/Image_Binary_blurred_01.vti "+prefix+"/Image_Binary_blurred_00.vti"
+        # cp_command_images = "cp PA1/Image_Binary_blurred_01.vti "+prefix+"/Image_Binary_blurred_00.vti"
+        cp_command_images = "cp PA1/PA1_Image_Binary_thrshd_01.vti "+prefix+"/"+prefix+"_Image_Binary_thrshd_00.vti"
         os.system(cp_command_images)
+
+
+
+if Downscale_vti:
+    import numpy as np
+    import dolfin_warp     as dwarp
+    # start by looping all patients vti to get smaller image resolution
+    metadatas = []
+    for i in Patients_Ids:
+        prefix = "PA"+str(i)
+        input_files_raw             = prefix+"/PGM/"+"Pat"+str(i)+"_inspi1"             # For metadata only here
+        pgm_files_raw, _            = pgm2array(input_files_raw)
+        metadata                    = get_metada_PGM(
+                                                        input_file        = pgm_files_raw[0],
+                                                        metadata_fields   = ["Rows", "Columns"]
+                                                    )
+        metadata.append(len(pgm_files_raw))
+        metadata = [int(meta) for meta in metadata]
+        metadatas.append(metadata)
+
+
+    # Compute scaling factor for each image
+    meta_array = np.array(metadatas)
+    min_xy = min(meta_array[:,0])
+    min_z = min(meta_array[:,2])
+
+    target = np.array([min_xy,min_xy,min_z]) 
+
+    scaling_factors = (meta_array/target).tolist()
+
+
+    # rescale all image
+    for i in Patients_Ids:
+        prefix                      = "PA"+str(i)
+        # Create copy of original sized image
+        initial_image1 = prefix+"/Image_Binary_blurred_01.vti"
+        command_cp_clone1 = "cp "+initial_image1+" "+prefix+"/Image_Binary_blurred_scaled_01.vti"
+        initial_image2 = prefix+"/Image_Binary_blurred_00.vti"
+        command_cp_clone2 = "cp "+initial_image2+" "+prefix+"/Image_Binary_blurred_scaled_00.vti"
+        os.system(command_cp_clone1)
+        os.system(command_cp_clone2)
+        print("Patient "+prefix+" cloned")
+
+
+
+        dwarp.compute_downsampled_images(
+                                        images_folder           = "./"+prefix+"/", 
+                                        images_basename         = "Image_Binary_blurred_scaled",
+                                        downsampling_factors    = scaling_factors[i-1]
+                                        )

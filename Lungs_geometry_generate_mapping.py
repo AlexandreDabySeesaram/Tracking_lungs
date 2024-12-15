@@ -56,12 +56,13 @@ def reduced_kiematics(patient,lung, mesh, tol=1e-6):
     prefix = "PA"+str(patient)
     dwarp.warp(
             working_folder                              = destination_path+prefix,
-            working_basename                            = "mapping_reduced_kinematics"+'_'+prefix+'_'+lung,
+            working_basename                            = "thrshd_mapping_reduced_kinematics"+'_'+prefix+'_'+lung,
             images_folder                               = destination_path+prefix,
-            images_basename                             = "Image_Binary_blurred",
+            # images_basename                             = "Image_Binary_blurred",
+            images_basename                             = prefix+"_Image_Binary_thrshd",
             images_ext                                  = "vti",
             mesh                                        = mesh,
-            images_quadrature                           = 3,
+            images_quadrature                           = 6,
             n_iter_max                                  = 500,
             regul_poisson                               = 0.3,
             tangent_type                                = "Idef",
@@ -79,19 +80,21 @@ def reduced_kiematics(patient,lung, mesh, tol=1e-6):
             print_iterations                            =1) 
 
 
-def tracking(patient,lung, mesh, tol=1e-3):
+def tracking(patient,lung, mesh, tol=1e-3, regul = 0.5):
     prefix = "PA"+str(patient)
     dwarp.warp(
+            w_char_func                                 = False, # 
             working_folder                              = destination_path+prefix,
-            working_basename                            = "mapping"+'_'+prefix+'_'+lung,
+            working_basename                            = "thrshd_mapping"+'_'+prefix+'_'+lung,
             images_folder                               = destination_path+prefix,
-            images_basename                             = "Image_Binary_blurred",
+            # images_basename                             = "Image_Binary_blurred",
+            images_basename                             = prefix+"_Image_Binary_thrshd",
             images_ext                                  = "vti",
             mesh                                        = mesh,
             n_iter_max                                  = 1000,
             tangent_type                                = "Idef",
             nonlinearsolver                             = "newton",
-            regul_types                                 = [ "continuous-hyperelastic"],         #"discrete-mesh",  "continuous-equilibrated", "discrete-tractions-normal", "continuous-equilibrated", "discrete-tractions-tangential", "continuous-hyperelastic" "continuous-hyperelastic",
+            regul_types                                 = [ "continuous-equilibrated"],         #"discrete-mesh",  "continuous-equilibrated", "discrete-tractions-normal", "continuous-equilibrated", "discrete-tractions-tangential", "continuous-hyperelastic" "continuous-hyperelastic",
             regul_model                                 = "ogdenciarletgeymonatneohookeanmooneyrivlin",
             regul_levels                                = [0.1],
             regul_poisson                               = 0.3,
@@ -104,7 +107,7 @@ def tracking(patient,lung, mesh, tol=1e-3):
             images_char_func                            = True,
             initialize_U_from_file                      = 1,
             initialize_U_folder                         = destination_path+prefix, 
-            initialize_U_basename                       = "mapping_reduced_kinematics"+'_'+prefix+'_'+lung,
+            initialize_U_basename                       = "thrshd_mapping_reduced_kinematics"+'_'+prefix+'_'+lung,
             initialize_U_ext                            = "vtu",
             initialize_U_array_name                     = "displacement",
             initialize_U_method                         = "dofs_transfer",                      # dofs_transfer, interpolation, projection
@@ -114,12 +117,18 @@ def tracking(patient,lung, mesh, tol=1e-3):
 N_patients = 9
 Patients_Ids = list(range(1,  N_patients + 1))
 Patients_Ids.remove(1)
+Patients_Ids.remove(3)
+Patients_Ids.remove(4)
+Patients_Ids.remove(6)
+
+
+
 
 Lungs = ['RL','LL']
-Lungs = ['RL']
+Lungs = ['RL','LL']
 
 
-# Patients_Ids = [1]
+# Patients_Ids = [3]
 
 for lung in Lungs:
     match lung:
@@ -127,7 +136,7 @@ for lung in Lungs:
             mesh = mesh_LL
         case 'RL':
             mesh = mesh_RL
-    initial_scaling(mesh, lung, coef =-0.2)
+    initial_scaling(mesh, lung, coef =1.2)
     for patient in Patients_Ids:
         reduced_kiematics(
                 patient                                 = patient,
@@ -139,4 +148,5 @@ for lung in Lungs:
                 patient                                 = patient,
                 lung                                    = lung,
                 mesh                                    = mesh,
-                tol                                     = 1e-6)
+                tol                                     = 1e-6,
+                regul                                   = 0.5)
