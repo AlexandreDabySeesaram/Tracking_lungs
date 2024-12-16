@@ -22,7 +22,9 @@ Blur_binary_vti                     = False
 Clean_BINARY_PGM                    = False
 Copy_initial_image                  = False
 Downscale_vti                       = False
-Threshold_blurred_images            = True
+Threshold_blurred_images            = False
+Left_right_lungs                    = False
+Threshold_blurred_images_LL_RR      = False
 original_dir = os.getcwd()                          # remember original path
 
 
@@ -40,6 +42,52 @@ if RAW_vti:
         os.system(command_cp)
         command_cp_ref              =  "cp E2/Image_P_00.vti "+new_file_ref
         os.system(command_cp_ref)
+
+
+if Left_right_lungs:
+    import vtk
+    from vtk.util.numpy_support import vtk_to_numpy, numpy_to_vtk
+    import numpy as np
+    for i in Patients_Ids:
+
+        prefix                      = "PA"+str(i)
+        input_file                  = prefix+"/"+prefix+"_Binary.vti"
+        output_file                 = prefix+"/"+prefix+"_Binary_LL_RL.vti"
+
+        # Load the VTI file
+        reader = vtk.vtkXMLImageDataReader()
+        reader.SetFileName(input_file)
+        reader.Update()
+
+        # Get the image data
+        image_data = reader.GetOutput()
+
+        # Extract scalar data
+        scalars = image_data.GetPointData().GetScalars()
+
+        # Convert VTK scalars to a Numpy array
+        scalar_array = vtk_to_numpy(scalars)
+
+        # Convert the numpy array to a signed type, e.g., int32 or float32
+        signed_scalar_array = scalar_array.astype(np.int32)  # Use np.float32 for floating-point
+
+        # Replace values
+        signed_scalar_array[signed_scalar_array == 200] = -100
+
+        # Convert back to VTK array and set it
+        modified_scalars = numpy_to_vtk(signed_scalar_array)
+        image_data.GetPointData().SetScalars(modified_scalars)
+
+        # Save the modified VTI file
+        writer = vtk.vtkXMLImageDataWriter()
+        writer.SetFileName(output_file)
+        writer.SetInputData(image_data)
+        writer.Write()
+
+        print("Sucess. "+prefix)
+
+
+
 
 if Clean_BINARY_PGM:
     for i in Patients_Ids:
@@ -94,12 +142,80 @@ if Vti_Binary_PGM:
 
 
 
-if Blur_binary_vti:
+# if Blur_binary_vti:
+#     import vtk 
+
+#     for i in Patients_Ids:
+#         prefix                      = "PA"+str(i)
+#         input_file                  = prefix+"/"+prefix+"_Binary.vti"
+#         # Read the .vti file
+#         reader                      = vtk.vtkXMLImageDataReader()
+#         reader.SetFileName(input_file)
+#         reader.Update()
+
+#         # Apply Gaussian smoothing
+#         gaussian                    = vtk.vtkImageGaussianSmooth()
+#         gaussian.SetInputConnection(reader.GetOutputPort())
+#         gaussian.SetStandardDeviations(5.0, 5.0, 5.0)                               # Standard deviations for the Gaussian in X, Y, Z
+#         gaussian.SetRadiusFactors(10.0, 10.0, 10.0)                                 # Radius factors 
+#         gaussian.Update()
+
+#         # Write the output to a new .vti file
+#         writer = vtk.vtkXMLImageDataWriter()
+#         writer.SetFileName(prefix+"/Image_Binary_blurred_01.vti")
+#         writer.SetInputConnection(gaussian.GetOutputPort())
+#         writer.Write()
+
+
+def create_LL_RL_binary(Patients_Ids, input_name, output_name):
+    import vtk
+    from vtk.util.numpy_support import vtk_to_numpy, numpy_to_vtk
+    import numpy as np
+    for i in Patients_Ids:
+
+        prefix                      = "PA"+str(i)
+        input_file                  = prefix+"/"+prefix+input_name+".vti"
+        output_file                 = prefix+"/"+prefix+output_name+".vti"
+
+        # Load the VTI file
+        reader = vtk.vtkXMLImageDataReader()
+        reader.SetFileName(input_file)
+        reader.Update()
+
+        # Get the image data
+        image_data = reader.GetOutput()
+
+        # Extract scalar data
+        scalars = image_data.GetPointData().GetScalars()
+
+        # Convert VTK scalars to a Numpy array
+        scalar_array = vtk_to_numpy(scalars)
+
+        # Convert the numpy array to a signed type, e.g., int32 or float32
+        signed_scalar_array = scalar_array.astype(np.int32)  # Use np.float32 for floating-point
+
+        # Replace values
+        signed_scalar_array[signed_scalar_array == 200] = -100
+
+        # Convert back to VTK array and set it
+        modified_scalars = numpy_to_vtk(signed_scalar_array)
+        image_data.GetPointData().SetScalars(modified_scalars)
+
+        # Save the modified VTI file
+        writer = vtk.vtkXMLImageDataWriter()
+        writer.SetFileName(output_file)
+        writer.SetInputData(image_data)
+        writer.Write()
+
+        print("Sucess. "+prefix)
+
+
+def blur_vti(Patients_Ids, input_name, output_name):
     import vtk 
 
     for i in Patients_Ids:
         prefix                      = "PA"+str(i)
-        input_file                  = prefix+"/"+prefix+"_Binary.vti"
+        input_file                  = prefix+"/"+prefix+input_name+".vti"
         # Read the .vti file
         reader                      = vtk.vtkXMLImageDataReader()
         reader.SetFileName(input_file)
@@ -114,10 +230,10 @@ if Blur_binary_vti:
 
         # Write the output to a new .vti file
         writer = vtk.vtkXMLImageDataWriter()
-        writer.SetFileName(prefix+"/Image_Binary_blurred_01.vti")
+        writer.SetFileName(prefix+"/"+prefix+output_name+".vti")
         writer.SetInputConnection(gaussian.GetOutputPort())
         writer.Write()
-
+        print("Done blurring. "+prefix)
 
 
 def get_values_segmented_images(patient, blurred = False):
@@ -189,6 +305,139 @@ if Threshold_blurred_images:
         writer.Write()
 
 
+
+def threshold_blurred_LL_RL(Patients_Ids, input_name, output_name, field_name = "pixel intensity"):
+    import vtk
+    from vtk.util.numpy_support import vtk_to_numpy, numpy_to_vtk
+    import numpy as np
+    for i in Patients_Ids:
+
+        prefix                      = "PA"+str(i)
+        input_file                  = prefix+"/"+prefix+input_name+".vti"
+
+        # Load the VTI file
+        reader = vtk.vtkXMLImageDataReader()
+        reader.SetFileName(input_file)
+        reader.Update()
+
+        # Get the image data
+        image_data = reader.GetOutput()
+
+        # Extract scalar data and convert to Numpy array
+        scalars = image_data.GetPointData().GetScalars()
+        scalar_array = vtk_to_numpy(scalars)
+
+        # Apply the value adjustments
+        scalar_array[(scalar_array >= -55) & (scalar_array <= -45)] = -500
+        scalar_array[(scalar_array >= 55) & (scalar_array <= 45)] = 500
+
+        # Convert the modified Numpy array back to VTK format
+        modified_scalars = numpy_to_vtk(scalar_array)
+        modified_scalars.SetName(field_name)  # Set the name of the scalar field
+
+        # Assign the modified scalars back to the image data
+        image_data.GetPointData().SetScalars(modified_scalars)
+
+        # Save the modified image to a new VTI file
+        writer = vtk.vtkXMLImageDataWriter()
+        writer.SetFileName(prefix+"/"+prefix+output_name+".vti")
+        writer.SetInputData(image_data)
+        writer.Write()
+
+        print("Done thresholding. "+prefix)
+
+# if Threshold_blurred_images_LL_RR:
+#     import vtk
+#     for i in Patients_Ids:
+#         prefix = "PA"+str(i)
+#         input_image = prefix+"/Image_Binary_blurred_01.vti"
+#         output_image = prefix+"/"+prefix+"_Image_Binary_thrshd_01.vti"
+#         # Load the VTI file
+#         reader = vtk.vtkXMLImageDataReader()
+#         reader.SetFileName(input_image)
+#         reader.Update()
+
+#         # Get the image data
+#         image_data = reader.GetOutput()
+
+#         # Apply a threshold to isolate the blurred zone
+#         threshold_filter = vtk.vtkImageThreshold()
+#         threshold_filter.SetInputData(image_data)
+
+#         # Set the threshold values based on your blurred range
+#         # These values depend on the range of values introduced by the Gaussian filter
+#         # Adjust the ranges as necessary (example: 0.1 to 0.9 for blurred values)
+#         threshold_filter.ThresholdBetween(1, 70)
+
+#         # Assign a high constant value to the blurred zone
+#         new_value = 500.0  # Replace with your desired high value
+#         threshold_filter.SetInValue(new_value)  # Value for the blurred zone
+#         threshold_filter.SetOutValue(0)         # Value for other zones (optional)
+#         threshold_filter.ReplaceInOn()
+#         threshold_filter.ReplaceOutOn()
+#         threshold_filter.Update()
+
+#         # Get the modified output
+#         output_data = threshold_filter.GetOutput()
+
+#         # Save the modified data back to a .vti file
+#         writer = vtk.vtkXMLImageDataWriter()
+#         writer.SetFileName(output_image)
+#         writer.SetInputData(output_data)
+#         writer.Write()
+
+
+def vti_unsigned_char(patient, input_name):
+    import vtk
+    from vtk.util.numpy_support import vtk_to_numpy, numpy_to_vtk
+    import numpy as np
+    prefix = "PA"+str(patient)
+    input_file                  = prefix+"/"+prefix+input_name+".vti"
+    output_image                = prefix+"/"+prefix+"_INT"+input_name+".vti"
+
+
+    # Load the VTI file
+    reader = vtk.vtkXMLImageDataReader()
+    reader.SetFileName(input_file)
+    reader.Update()
+
+    # Get the image data
+    image_data = reader.GetOutput()
+
+    # Extract the scalar data as a Numpy array
+    scalars = image_data.GetPointData().GetScalars()
+    scalar_array = vtk_to_numpy(scalars)
+
+    # Rescale the data to fit within [0, 255]
+    min_val = scalar_array.min()
+    max_val = scalar_array.max()
+
+    # Avoid division by zero if all values are the same
+    if max_val > min_val:
+        rescaled_array = 255 * (scalar_array - min_val) / (max_val - min_val)
+    else:
+        rescaled_array = np.zeros_like(scalar_array)
+
+    # Convert the data type to unsigned char (uint8)
+    rescaled_array = rescaled_array.astype(np.uint8)
+
+    # Convert the modified Numpy array back to VTK format
+    modified_scalars = numpy_to_vtk(rescaled_array, deep=True)
+    # modified_scalars.SetName("RescaledScalars")  # Optional: Set a new name for the scalar field
+
+    # Assign the new scalars back to the image data
+    image_data.GetPointData().SetScalars(modified_scalars)
+
+    # Save the modified image to a new VTI file
+    writer = vtk.vtkXMLImageDataWriter()
+    writer.SetFileName(output_image)
+    writer.SetInputData(image_data)
+    writer.Write()
+
+    print("Rescaling complete."+prefix)
+
+
+
 if Copy_initial_image:
 
     for i in Patients_Ids:
@@ -197,7 +446,17 @@ if Copy_initial_image:
         cp_command_images = "cp PA1/PA1_Image_Binary_thrshd_01.vti "+prefix+"/"+prefix+"_Image_Binary_thrshd_00.vti"
         os.system(cp_command_images)
 
+def prepare_pairs_images(Patients_Ids, input_name):
 
+    for i in Patients_Ids:
+        prefix = "PA"+str(i)
+        cp_command_images_01 = "cp "+prefix+"/"+prefix+input_name+".vti "+prefix+"/"+prefix+input_name+"_01.vti" 
+        os.system(cp_command_images_01)
+
+
+        # cp_command_images = "cp PA1/Image_Binary_blurred_01.vti "+prefix+"/Image_Binary_blurred_00.vti"
+        cp_command_images_00 = "cp PA1/PA1"+input_name+"_01.vti "+prefix+"/"+prefix+input_name+"_00.vti" 
+        os.system(cp_command_images_00)
 
 if Downscale_vti:
     import numpy as np
@@ -246,3 +505,40 @@ if Downscale_vti:
                                         images_basename         = "Image_Binary_blurred_scaled",
                                         downsampling_factors    = scaling_factors[i-1]
                                         )
+
+
+
+#%% Pipeline
+
+# Put one lung to -100 and the other to +100
+# create_LL_RL_binary(
+#         Patients_Ids    = Patients_Ids,
+#         input_name      = "_Binary",
+#         output_name     = "_Binary_LL_RL")
+
+
+# Blur signed lung binaries
+# blur_vti(
+#         Patients_Ids    = Patients_Ids,
+#         input_name      = "_Binary_LL_RL",
+#         output_name     = "_Binary_LL_RL_blurred")
+
+
+# thresholds blurred signed lung binaries
+threshold_blurred_LL_RL(
+        Patients_Ids    = Patients_Ids,
+        input_name      = "_Binary_LL_RL_blurred",
+        output_name     = "_Binary_LL_RL_blurred_thrshld")
+
+# blur thresholds blurred signed lung binaries
+blur_vti(
+        Patients_Ids    = Patients_Ids,
+        input_name      = "_Binary_LL_RL_blurred_thrshld",
+        output_name     = "_Binary_LL_RL_blurred_thrshld_blurred")
+
+# Copy initial image and target images to right names and folders
+prepare_pairs_images(Patients_Ids, "_Binary_LL_RL_blurred_thrshld_blurred")
+
+# Convert to unsigned char the vti (effectively rescaling the oxel values), otherwise the kernel crashes
+vti_unsigned_char(2,"_Binary_LL_RL_blurred_thrshld_blurred_00")
+vti_unsigned_char(2,"_Binary_LL_RL_blurred_thrshld_blurred_01")
