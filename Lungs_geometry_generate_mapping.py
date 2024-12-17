@@ -59,11 +59,14 @@ def reduced_kiematics(patient,lung, mesh, tol=1e-6):
             working_basename                            = "thrshd_mapping_reduced_kinematics"+'_'+prefix+'_'+lung,
             images_folder                               = destination_path+prefix,
             # images_basename                             = "Image_Binary_blurred",
-            images_basename                             = prefix+"_INT_Binary_LL_RL_blurred_thrshld",
+            # images_basename                             = prefix+"_INT_Binary_LL_RL_blurred_thrshld",
+            # images_basename                             = prefix+"_INT_Binary_LL_RL_blurred_thrshld_blurred",
+            images_basename                             = prefix+"_INT_thrshld_external_gradient",
+            # images_basename                             = prefix+"_thrshld_external_gradient",
             images_ext                                  = "vti",
             mesh                                        = mesh,
             images_quadrature                           = 6,
-            n_iter_max                                  = 1500,
+            n_iter_max                                  = 1000,
             regul_poisson                               = 0.3,
             tangent_type                                = "Idef",
             nonlinearsolver                             = "reduced_kinematic_newton",
@@ -88,7 +91,10 @@ def tracking(patient,lung, mesh, tol=1e-3, regul = 0.5):
             working_basename                            = "thrshd_mapping"+'_'+prefix+'_'+lung,
             images_folder                               = destination_path+prefix,
             # images_basename                             = "Image_Binary_blurred",
-            images_basename                             = prefix+"_INT_Binary_LL_RL_blurred_thrshld",
+            # images_basename                             = prefix+"_INT_Binary_LL_RL_blurred_thrshld",
+            # images_basename                             = prefix+"_INT_Binary_LL_RL_blurred_thrshld_blurred",
+            images_basename                             = prefix+"_INT_thrshld_external_gradient",
+            # images_basename                             = prefix+"_thrshld_external_gradient",
             images_ext                                  = "vti",
             mesh                                        = mesh,
             n_iter_max                                  = 1000,
@@ -136,7 +142,7 @@ for lung in Lungs:
             mesh = mesh_LL
         case 'RL':
             mesh = mesh_RL
-    initial_scaling(mesh, lung, coef =0.4)
+    initial_scaling(mesh, lung, coef =0.2)
     for patient in Patients_Ids:
         reduced_kiematics(
                 patient                                 = patient,
