@@ -52,7 +52,7 @@ def initial_scaling(mesh, lung, coef =-0.4):
 
 destination_path = "./"                                                                         #Root path for patients solution folders
 
-def reduced_kiematics(image_base_name, patient,lung, mesh, tol=1e-6):
+def reduced_kiematics(image_base_name, patient,lung, mesh, tol=1e-6, images_quadrature = 6):
 
    
     prefix = "PA"+str(patient)
@@ -128,16 +128,18 @@ def warp_and_blur(patient, attenuation_factors, lung, mesh):
     import Create_data
     prefix = "PA"+str(patient)
     common_basename = "_INT_thrshld_external_gradient"
+    images_quadrature_progressive = np.linspace(1, 6, len(attenuation_factors))  # Generate m evenly spaced values
+    images_quadrature_progressive = np.round(images_quadrature_progressive).astype(int)
 
-    for attenuation_factor in attenuation_factors:
+    for i in range(len(attenuation_factors)):
         Create_data.gaussian_windowing(
                 working_folder                              = destination_path+prefix,
                 image_name                                  =prefix+common_basename,
-                attenuation_factor                          = attenuation_factor,   
+                attenuation_factor                          = attenuation_factors[i],   
                 verbose                                     = True
                 )
         image_base_name = common_basename + "_downsampled="+str(attenuation_factor)
-        reduced_kiematics(image_base_name, patient,lung, mesh, tol=1e-6):
+        reduced_kiematics(image_base_name, patient,lung, mesh, tol=1e-6, images_quadrature = images_quadrature_progressive[i])
 
 
 
