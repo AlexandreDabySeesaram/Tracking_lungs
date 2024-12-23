@@ -456,6 +456,7 @@ def from_threshold_to_gradually_threshold(patient, input_name, output_name):
 
 
 def gaussian_windowing(
+        working_folder              : str,
         image_name                  : str, 
         attenuation_factor          : float         = 2,                                # attenuation coef of the cut-off frequency
         image_ext                   : str           = '.vti',
@@ -465,9 +466,9 @@ def gaussian_windowing(
 
     import vtk
     suffix+=str(attenuation_factor)
-
+    working_folder+="/"
     # Start by getting voxel_size
-    file = image_name+image_ext
+    file = working_folder+image_name+image_ext
     reader = vtk.vtkXMLImageDataReader()
     reader.SetFileName(file)
     reader.Update()
@@ -494,7 +495,7 @@ def gaussian_windowing(
     gaussian.Update()
 
     writer = vtk.vtkXMLImageDataWriter()
-    writer.SetFileName(image_name+suffix+image_ext)
+    writer.SetFileName(working_folder+image_name+suffix+image_ext)
     writer.SetInputConnection(gaussian.GetOutputPort())
     writer.Write()
     print("Done downsampling. "+image_name)
