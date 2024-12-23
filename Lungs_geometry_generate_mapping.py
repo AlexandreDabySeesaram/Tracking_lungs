@@ -52,12 +52,9 @@ def initial_scaling(mesh, lung, coef =-0.4):
 
 destination_path = "./"                                                                         #Root path for patients solution folders
 
-def reduced_kiematics(image_base_name, patient,lung, mesh, tol=1e-6, attenuation_factor = None):
+def reduced_kiematics(image_base_name, patient,lung, mesh, tol=1e-6):
 
-    if attenuation_factor is not None:
-        image_base_name+="_downsampled="+str(attenuation_factor)
-
-
+   
     prefix = "PA"+str(patient)
     dwarp.warp(
             working_folder                              = destination_path+prefix,
@@ -127,7 +124,24 @@ def tracking(patient,lung, mesh, tol=1e-3, regul = 0.5):
 
 
 
-def warp_and_blur():
+def warp_and_blur(patient, attenuation_factors, lung, mesh):
+    import Create_data
+    prefix = "PA"+str(patient)
+    common_basename = "_INT_thrshld_external_gradient"
+
+    for attenuation_factor in attenuation_factors:
+        Create_data.gaussian_windowing(
+                working_folder                              = destination_path+prefix,
+                image_name                                  =prefix+common_basename,
+                attenuation_factor                          = attenuation_factor,   
+                verbose                                     = True
+                )
+        image_base_name = common_basename + "_downsampled="+str(attenuation_factor)
+        reduced_kiematics(image_base_name, patient,lung, mesh, tol=1e-6):
+
+
+
+
 
 
 
