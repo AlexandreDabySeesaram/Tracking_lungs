@@ -457,7 +457,7 @@ def from_threshold_to_gradually_threshold(patient, input_name, output_name):
 
 def gaussian_windowing(
         image_name                  : str, 
-        attenuation_factor          : float         = 2,                            # attenuation coef of the cut-off frequency
+        attenuation_factor          : float         = 2,                                # attenuation coef of the cut-off frequency
         image_ext                   : str           = '.vti',
         suffix                      : str           = "_downsampled=",
         verbose                     : bool          = False
@@ -473,14 +473,14 @@ def gaussian_windowing(
     reader.Update()
 
     image = reader.GetOutput()
-    voxel_sizes = image.GetSpacing()                                                # (dx, dy, dz)
-    dimensions = image.GetDimensions()                                              # (nx, ny, nz)
+    voxel_sizes = image.GetSpacing()                                                    # (dx, dy, dz)
+    dimensions = image.GetDimensions()                                                  # (nx, ny, nz)
 
     #Compute the standard deviation associated with the attenuation factor
     import numpy as np
     sigma = np.sqrt(-(np.log(1/attenuation_factor))/(2*np.pi*np.array(voxel_sizes))**2)
     radius = np.ceil(6 * sigma)
-    radius[radius % 2 == 0] += 1                                                    # Add 1 to even numbers to make them odd
+    radius[radius % 2 == 0] += 1                                                        # Add 1 to even numbers to make them odd
     if verbose:
         print(f"* dimensions are {dimensions}")
         print(f"* voxel sizes are {voxel_sizes}")
@@ -489,8 +489,8 @@ def gaussian_windowing(
 
     gaussian = vtk.vtkImageGaussianSmooth()
     gaussian.SetInputConnection(reader.GetOutputPort())
-    gaussian.SetStandardDeviations(sigma)                                           # Standard deviations for the Gaussian in X, Y, Z
-    gaussian.SetRadiusFactors(radius)                                               # Radius factors 
+    gaussian.SetStandardDeviations(sigma)                                               # Standard deviations for the Gaussian in X, Y, Z
+    gaussian.SetRadiusFactors(radius)                                                   # Radius factors 
     gaussian.Update()
 
     writer = vtk.vtkXMLImageDataWriter()
