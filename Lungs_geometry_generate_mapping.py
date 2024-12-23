@@ -161,7 +161,7 @@ def warp_and_blur(patient, attenuation_factors, lung, mesh):
                 initialize_reduced_U_filename   = initialize_reduced_U_filename,
                 )
 
-                ###### Check that .dat is saved in reduced kinematics for latter initialisation
+                ###### Check that .dat is saved in reduced kinematics for latter initialisation check name for initial .dat files
         else:
             dwarp.warp(
                 working_folder                  = working_folder,
