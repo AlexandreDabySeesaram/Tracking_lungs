@@ -142,7 +142,7 @@ def warp_and_blur(patient, attenuation_factors, lung, mesh):
         reduced_kiematics(image_base_name, patient,lung, mesh, tol=1e-6, images_quadrature = images_quadrature_progressive[i])
 
         ### Update with new reduced kinematics: Check that results of reduced kinematics is saved in .dat
-        
+
         if i >=1 :
             dwarp.warp(
                 working_folder                  = working_folder,
@@ -157,8 +157,8 @@ def warp_and_blur(patient, attenuation_factors, lung, mesh):
                 relax_type                      = relax_type,
                 tol_dU                          = tol_dU,
                 write_qois_limited_precision    = write_qois_limited_precision, 
-                initialize_reduced_U_from_file  = True,
-                initialize_reduced_U_filename   = "Reduced_kinematics_"+lung+"_downsampled="+str(attenuation_factor)+"dat",
+                initialize_reduced_U_from_file  = initialize_reduced_U_from_file,
+                initialize_reduced_U_filename   = initialize_reduced_U_filename,
                 )
 
                 ###### Check that .dat is saved in reduced kinematics for latter initialisation
@@ -177,7 +177,7 @@ def warp_and_blur(patient, attenuation_factors, lung, mesh):
                 tol_dU                          = tol_dU,
                 write_qois_limited_precision    = write_qois_limited_precision, 
                 initialize_reduced_U_from_file  = True,
-                initialize_reduced_U_filename   = "initial_scaling_"+lung+".dat",
+                initialize_reduced_U_filename   = working_basename+"_downsampled="+str(attenuation_factor)+".dat",
                 )
 
 
