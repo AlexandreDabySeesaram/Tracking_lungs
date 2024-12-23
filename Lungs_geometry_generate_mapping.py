@@ -141,6 +141,43 @@ def warp_and_blur(patient, attenuation_factors, lung, mesh):
         image_base_name = common_basename + "_downsampled="+str(attenuation_factor)
         reduced_kiematics(image_base_name, patient,lung, mesh, tol=1e-6, images_quadrature = images_quadrature_progressive[i])
 
+        ### Update with new reduced kinematics 
+        if i >=1 :
+            dwarp.warp(
+                working_folder                  = working_folder,
+                working_basename                = working_basename+"_downsampled="+str(attenuation_factor),
+                images_folder                   = images_folder,
+                images_basename                 = images_basename_blur_factor,
+                images_quadrature               = images_quadrature_progressive[i],
+                mesh                            = mesh,
+                kinematics_type                 = kinematics_type,
+                reduced_kinematics_model        = reduced_kinematics_model,
+                normalize_energies              = normalize_energies,
+                relax_type                      = relax_type,
+                tol_dU                          = tol_dU,
+                write_qois_limited_precision    = write_qois_limited_precision, 
+                initialize_reduced_U_from_file  = True,
+                initialize_reduced_U_filename   = "Reduced_kinematics_"+lung+"_downsampled="+str(attenuation_factor)+"dat",
+                )
+
+                ###### Check that .dat is saved in reduced kinematics for latter initialisation
+        else:
+            dwarp.warp(
+                working_folder                  = working_folder,
+                working_basename                = working_basename+"_downsampled="+str(attenuation_factor),
+                images_folder                   = images_folder,
+                images_basename                 = images_basename_blur_factor,
+                images_quadrature               = images_quadrature_progressive[i],
+                mesh                            = mesh,
+                kinematics_type                 = kinematics_type,
+                reduced_kinematics_model        = reduced_kinematics_model,
+                normalize_energies              = normalize_energies,
+                relax_type                      = relax_type,
+                tol_dU                          = tol_dU,
+                write_qois_limited_precision    = write_qois_limited_precision, 
+                initialize_reduced_U_from_file  = True,
+                initialize_reduced_U_filename   = "initial_scaling_"+lung+".dat",
+                )
 
 
 
