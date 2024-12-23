@@ -52,22 +52,21 @@ def initial_scaling(mesh, lung, coef =-0.4):
 
 destination_path = "./"                                                                         #Root path for patients solution folders
 
-def reduced_kiematics(patient,lung, mesh, tol=1e-6, attenuation_factor = None):
+def reduced_kiematics(image_base_name, patient,lung, mesh, tol=1e-6, attenuation_factor = None):
 
     if attenuation_factor is not None:
-        file = "thrshd_mapping_reduced_kinematics"+'_'+prefix+'_'+lung+"_downsampled="+str(attenuation_factor)
-    else:
-        file = "thrshd_mapping_reduced_kinematics"+'_'+prefix+'_'+lung
+        image_base_name+="_downsampled="+str(attenuation_factor)
+
 
     prefix = "PA"+str(patient)
     dwarp.warp(
             working_folder                              = destination_path+prefix,
-            working_basename                            = file,
+            working_basename                            = "thrshd_mapping_reduced_kinematics"+'_'+prefix+'_'+lung,
             images_folder                               = destination_path+prefix,
             # images_basename                             = "Image_Binary_blurred",
             # images_basename                             = prefix+"_INT_Binary_LL_RL_blurred_thrshld",
             # images_basename                             = prefix+"_INT_thrshld_external_gradient",
-            images_basename                             = prefix+"_INT_thrshld_external_gradient_blurred",
+            images_basename                             = prefix+image_base_name,
             # images_basename                             = prefix+"_INT_thrshld_external_gradient",
             # images_basename                             = prefix+"_thrshld_external_gradient",
             images_ext                                  = "vti",
@@ -160,7 +159,8 @@ for lung in Lungs:
     # initial_scaling(mesh, lung, coef =0.5)
     for patient in Patients_Ids:
         # reduced_kiematics(
-        #         patient                                 = patient,
+                # image_base_name                         = "_INT_thrshld_external_gradient_blurred"
+                # patient                                 = patient,
         #         lung                                    = lung,
         #         mesh                                    = mesh,
         #         tol                                     = 1e-6)
