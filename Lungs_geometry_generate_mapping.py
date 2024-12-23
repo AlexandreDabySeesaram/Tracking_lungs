@@ -52,11 +52,17 @@ def initial_scaling(mesh, lung, coef =-0.4):
 
 destination_path = "./"                                                                         #Root path for patients solution folders
 
-def reduced_kiematics(patient,lung, mesh, tol=1e-6):
+def reduced_kiematics(patient,lung, mesh, tol=1e-6, attenuation_factor = None):
+
+    if attenuation_factor is not None:
+        file = "thrshd_mapping_reduced_kinematics"+'_'+prefix+'_'+lung+"_downsampled="+str(attenuation_factor)
+    else:
+        file = "thrshd_mapping_reduced_kinematics"+'_'+prefix+'_'+lung
+
     prefix = "PA"+str(patient)
     dwarp.warp(
             working_folder                              = destination_path+prefix,
-            working_basename                            = "thrshd_mapping_reduced_kinematics"+'_'+prefix+'_'+lung,
+            working_basename                            = file,
             images_folder                               = destination_path+prefix,
             # images_basename                             = "Image_Binary_blurred",
             # images_basename                             = prefix+"_INT_Binary_LL_RL_blurred_thrshld",
@@ -119,6 +125,11 @@ def tracking(patient,lung, mesh, tol=1e-3, regul = 0.5):
             initialize_U_array_name                     = "displacement",
             initialize_U_method                         = "dofs_transfer",                      # dofs_transfer, interpolation, projection
             print_iterations                            = 1)                                    # dofs_transfer, interpolation, projection)
+
+
+
+def warp_and_blur():
+
 
 
 N_patients = 9
