@@ -141,7 +141,7 @@ def warp_and_blur(patient, attenuation_factors, lung, mesh):
         image_base_name = common_basename + "_downsampled="+str(attenuation_factor)
         reduced_kiematics(image_base_name, patient,lung, mesh, tol=1e-6, images_quadrature = images_quadrature_progressive[i])
 
-        ### Update with new reduced kinematics 
+        ### Update with new reduced kinematics: Check that results of reduced kinemaictcs is saved in .dat
         if i >=1 :
             dwarp.warp(
                 working_folder                  = working_folder,
