@@ -9,87 +9,27 @@ N_patients      = 9
 Patients_Ids    = list(range(1,  N_patients + 1))
 # Patients_Ids.remove(1)
 
-# Patients_Ids = [1]
+Patients_Ids = [2]
 
 initial_path = '/Users/daby/LargeFiles/Geometries_alexandre/Patient_data/Images/'
 
 destination_path = "./"
 
-RAW_vti                             = False
-Vti_Binary_PGM                      = False         # check +- 1 on pixels
-Vti_RAW_PGM                         = False
-Blur_binary_vti                     = False
-Clean_BINARY_PGM                    = False
+Vti_Binary_from_PGM                 = False         # check +- 1 on pixels
 Copy_initial_image                  = False
 Downscale_vti                       = False
 Threshold_blurred_images            = False
-Left_right_lungs                    = False
 Threshold_blurred_images_LL_RR      = False
 original_dir = os.getcwd()                          # remember original path
 
 
 
-if RAW_vti:
-    for i in Patients_Ids:
-        prefix                      = "PA"+str(i)
-        folder                      = prefix+"_images/"
-        file_init                   = Folder+prefix+"_M0_RAW_1.vti"
-        new_folder                  = destination_path+prefix
-        new_file                    = new_folder+ "/Image_01.vti"
-        new_file_ref                = new_folder+ "/Image_00.vti"
-        command_mkdir               = "mkdir "+new_folder
-        command_cp                  = "cp "+initial_path+file_init+" "+new_file
-        os.system(command_cp)
-        command_cp_ref              =  "cp E2/Image_P_00.vti "+new_file_ref
-        os.system(command_cp_ref)
 
+def Clean_BINARY_PGM(
+    Patients_Ids = Patients_Ids, 
+        ):
+    import os
 
-if Left_right_lungs:
-    import vtk
-    from vtk.util.numpy_support import vtk_to_numpy, numpy_to_vtk
-    import numpy as np
-    for i in Patients_Ids:
-
-        prefix                      = "PA"+str(i)
-        input_file                  = prefix+"/"+prefix+"_Binary.vti"
-        output_file                 = prefix+"/"+prefix+"_Binary_LL_RL.vti"
-
-        # Load the VTI file
-        reader = vtk.vtkXMLImageDataReader()
-        reader.SetFileName(input_file)
-        reader.Update()
-
-        # Get the image data
-        image_data = reader.GetOutput()
-
-        # Extract scalar data
-        scalars = image_data.GetPointData().GetScalars()
-
-        # Convert VTK scalars to a Numpy array
-        scalar_array = vtk_to_numpy(scalars)
-
-        # Convert the numpy array to a signed type, e.g., int32 or float32
-        signed_scalar_array = scalar_array.astype(np.int32)  # Use np.float32 for floating-point
-
-        # Replace values
-        signed_scalar_array[signed_scalar_array == 200] = -100
-
-        # Convert back to VTK array and set it
-        modified_scalars = numpy_to_vtk(signed_scalar_array)
-        image_data.GetPointData().SetScalars(modified_scalars)
-
-        # Save the modified VTI file
-        writer = vtk.vtkXMLImageDataWriter()
-        writer.SetFileName(output_file)
-        writer.SetInputData(image_data)
-        writer.Write()
-
-        print("Sucess. "+prefix)
-
-
-
-
-if Clean_BINARY_PGM:
     for i in Patients_Ids:
         prefix                      = "PA"+str(i)
         # Gif
@@ -115,56 +55,8 @@ if Clean_BINARY_PGM:
 
 
 
-# /!\ Need to read metadata from raw images
-
-if Vti_Binary_PGM:
-    for i in Patients_Ids:
-        prefix                      = "PA"+str(i)
-        input_files                 = prefix+"/LUNG/"+"Pat"+str(i)+"_inspi1"
-        input_files_raw             = prefix+"/PGM/"+"Pat"+str(i)+"_inspi1"             # For metadata only here
-        output = prefix+"/"+prefix+"_Binary"
-        pgm_files, image_array      = pgm2array(input_files)
-        pgm_files_raw, _            = pgm2array(input_files_raw)
-        metadata_fields             = ["Slice_Location", "Pixel_Size"]
-        metadata                    = get_metada_PGM(
-                                                        input_file        = pgm_files_raw[0],
-                                                        metadata_fields   = metadata_fields
-                                                    )
-        image_shape, pixel_size, image_pos, flatten_image_array = get_z_metadata_flatten_image(pgm_files_raw, metadata, image_array)
-        array2vti(
-                image_shape         = image_shape,
-                pixel_size          = pixel_size,
-                image_pos           = image_pos,
-                input_array         = flatten_image_array,
-                field_name          = 'pixel intensity',
-                output              = output)
-        print("Patient "+prefix+"done")
 
 
-
-# if Blur_binary_vti:
-#     import vtk 
-
-#     for i in Patients_Ids:
-#         prefix                      = "PA"+str(i)
-#         input_file                  = prefix+"/"+prefix+"_Binary.vti"
-#         # Read the .vti file
-#         reader                      = vtk.vtkXMLImageDataReader()
-#         reader.SetFileName(input_file)
-#         reader.Update()
-
-#         # Apply Gaussian smoothing
-#         gaussian                    = vtk.vtkImageGaussianSmooth()
-#         gaussian.SetInputConnection(reader.GetOutputPort())
-#         gaussian.SetStandardDeviations(5.0, 5.0, 5.0)                               # Standard deviations for the Gaussian in X, Y, Z
-#         gaussian.SetRadiusFactors(10.0, 10.0, 10.0)                                 # Radius factors 
-#         gaussian.Update()
-
-#         # Write the output to a new .vti file
-#         writer = vtk.vtkXMLImageDataWriter()
-#         writer.SetFileName(prefix+"/Image_Binary_blurred_01.vti")
-#         writer.SetInputConnection(gaussian.GetOutputPort())
-#         writer.Write()
 
 
 def create_LL_RL_binary(Patients_Ids, input_name, output_name):
@@ -207,7 +99,7 @@ def create_LL_RL_binary(Patients_Ids, input_name, output_name):
         writer.SetInputData(image_data)
         writer.Write()
 
-        print("Sucess. "+prefix)
+        print("Done LL RL. "+prefix)
 
 
 def blur_vti(Patients_Ids, input_name, output_name, radius = 10.0, std = 5.0):
@@ -224,8 +116,8 @@ def blur_vti(Patients_Ids, input_name, output_name, radius = 10.0, std = 5.0):
         # Apply Gaussian smoothing
         gaussian                    = vtk.vtkImageGaussianSmooth()
         gaussian.SetInputConnection(reader.GetOutputPort())
-        gaussian.SetStandardDeviations(std, std, std)                               # Standard deviations for the Gaussian in X, Y, Z
-        gaussian.SetRadiusFactors(radius, radius, radius)                                 # Radius factors 
+        gaussian.SetStandardDeviations(std, std, std)                                       # Standard deviations for the Gaussian in X, Y, Z
+        gaussian.SetRadiusFactors(radius, radius, radius)                                   # Radius factors 
         gaussian.Update()
 
         # Write the output to a new .vti file
@@ -328,8 +220,8 @@ def threshold_blurred_LL_RL(Patients_Ids, input_name, output_name, field_name = 
         scalar_array = vtk_to_numpy(scalars)
 
         # Apply the value adjustments
-        scalar_array[(scalar_array >= -60) & (scalar_array <= -45)] = -150
-        scalar_array[(scalar_array >= 45) & (scalar_array <= 60)] = 150
+        scalar_array[(scalar_array >= -90) & (scalar_array <= -25)] = -1000 # was 500 but due to uint8, too big of a contrast
+        scalar_array[(scalar_array >= 25) & (scalar_array <= 90)] = 1000
 
         # Convert the modified Numpy array back to VTK format
         modified_scalars = numpy_to_vtk(scalar_array)
@@ -470,55 +362,6 @@ def prepare_pairs_images(Patients_Ids, input_name):
         cp_command_images_00 = "cp PA1/PA1"+input_name+"_01.vti "+prefix+"/"+prefix+input_name+"_00.vti" 
         os.system(cp_command_images_00)
 
-if Downscale_vti:
-    import numpy as np
-    import dolfin_warp     as dwarp
-    # start by looping all patients vti to get smaller image resolution
-    metadatas = []
-    for i in Patients_Ids:
-        prefix = "PA"+str(i)
-        input_files_raw             = prefix+"/PGM/"+"Pat"+str(i)+"_inspi1"             # For metadata only here
-        pgm_files_raw, _            = pgm2array(input_files_raw)
-        metadata                    = get_metada_PGM(
-                                                        input_file        = pgm_files_raw[0],
-                                                        metadata_fields   = ["Rows", "Columns"]
-                                                    )
-        metadata.append(len(pgm_files_raw))
-        metadata = [int(meta) for meta in metadata]
-        metadatas.append(metadata)
-
-
-    # Compute scaling factor for each image
-    meta_array = np.array(metadatas)
-    min_xy = min(meta_array[:,0])
-    min_z = min(meta_array[:,2])
-
-    target = np.array([min_xy,min_xy,min_z]) 
-
-    scaling_factors = (meta_array/target).tolist()
-
-
-    # rescale all image
-    for i in Patients_Ids:
-        prefix                      = "PA"+str(i)
-        # Create copy of original sized image
-        initial_image1 = prefix+"/Image_Binary_blurred_01.vti"
-        command_cp_clone1 = "cp "+initial_image1+" "+prefix+"/Image_Binary_blurred_scaled_01.vti"
-        initial_image2 = prefix+"/Image_Binary_blurred_00.vti"
-        command_cp_clone2 = "cp "+initial_image2+" "+prefix+"/Image_Binary_blurred_scaled_00.vti"
-        os.system(command_cp_clone1)
-        os.system(command_cp_clone2)
-        print("Patient "+prefix+" cloned")
-
-
-
-        dwarp.compute_downsampled_images(
-                                        images_folder           = "./"+prefix+"/", 
-                                        images_basename         = "Image_Binary_blurred_scaled",
-                                        downsampling_factors    = scaling_factors[i-1]
-                                        )
-
-
 
 def from_threshold_to_gradually_threshold(patient, input_name, output_name):
     blur_vti(
@@ -607,11 +450,56 @@ def from_threshold_to_gradually_threshold(patient, input_name, output_name):
     writer.SetInputData(image_data_1)
     writer.Write()
 
-    print("Done. written at"+output_name+ ".vti")
+    print("Done. written at"+output_file)
 
 
 
 
+def gaussian_windowing(
+        image_name                  : str, 
+        attenuation_factor          : float         = 2,                            # attenuation coef of the cut-off frequency
+        image_ext                   : str           = '.vti',
+        suffix                      : str           = "_downsampled=",
+        verbose                     : bool          = False
+        ):
+
+    import vtk
+    suffix+=str(attenuation_factor)
+
+    # Start by getting voxel_size
+    file = image_name+image_ext
+    reader = vtk.vtkXMLImageDataReader()
+    reader.SetFileName(file)
+    reader.Update()
+
+    image = reader.GetOutput()
+    voxel_sizes = image.GetSpacing()  # (dx, dy, dz)
+    dimensions = image.GetDimensions()  # (nx, ny, nz)
+
+    #Compute the standard deviation associated with the cut-off freq and the attenuation factor
+    import numpy as np
+    sigma = np.sqrt(-(np.log(1/attenuation_factor))/(2*np.pi*np.array(voxel_sizes))**2)
+    radius = np.ceil(6 * sigma)
+    radius[radius % 2 == 0] += 1  # Add 1 to even numbers to make them odd
+    if verbose:
+        print(f"* dimensions are {dimensions}")
+        print(f"* voxel sizes are {voxel_sizes}")
+        print(f"* standard deviation is {sigma}")
+        print(f"* radius is {radius}")
+
+    # Apply Gaussian smoothing
+    gaussian                    = vtk.vtkImageGaussianSmooth()
+    gaussian.SetInputConnection(reader.GetOutputPort())
+    gaussian.SetStandardDeviations(sigma)                                           # Standard deviations for the Gaussian in X, Y, Z
+    gaussian.SetRadiusFactors(radius)                                               # Radius factors 
+    gaussian.Update()
+
+    # Write the output to a new .vti file
+    writer = vtk.vtkXMLImageDataWriter()
+    writer.SetFileName(image_name+suffix+image_ext)
+    writer.SetInputConnection(gaussian.GetOutputPort())
+    writer.Write()
+    print("Done downsampling. "+image_name)
 
 
 
@@ -625,25 +513,121 @@ def from_threshold_to_gradually_threshold(patient, input_name, output_name):
 
 #%% Pipeline
 
+
+# N_patients      = 9
+# Patients_Ids    = list(range(1,  N_patients + 1))
+# Patients_Ids.remove(1)
+# Patients_Ids.remove(2)
+
+Patients_Ids = [1,2]
+
+strategy = "external_progressive_gradient"
+
+
+
+
+# /!\ Need to read metadata from raw images
+
+if Vti_Binary_from_PGM:
+    for i in Patients_Ids:
+        prefix                      = "PA"+str(i)
+        input_files                 = prefix+"/LUNG/"+"Pat"+str(i)+"_inspi1"
+        input_files_raw             = prefix+"/PGM/"+"Pat"+str(i)+"_inspi1"             # For metadata only here
+        output = prefix+"/"+prefix+"_Binary"
+        pgm_files, image_array      = pgm2array(input_files)
+        pgm_files_raw, _            = pgm2array(input_files_raw)
+        metadata_fields             = ["Slice_Location", "Pixel_Size"]
+        metadata                    = get_metada_PGM(
+                                                        input_file        = pgm_files_raw[0],
+                                                        metadata_fields   = metadata_fields
+                                                    )
+        image_shape, pixel_size, image_pos, flatten_image_array = get_z_metadata_flatten_image(pgm_files_raw, metadata, image_array)
+        array2vti(
+                image_shape         = image_shape,
+                pixel_size          = pixel_size,
+                image_pos           = image_pos,
+                input_array         = flatten_image_array,
+                field_name          = 'pixel intensity',
+                output              = output)
+        print("Patient "+prefix+"done")
+
+
+# Put all vi at the same discretisation
+
+if Downscale_vti:
+    import numpy as np
+    import dolfin_warp     as dwarp
+    # start by looping all patients vti to get smaller image resolution
+    metadatas = []
+    for i in Patients_Ids:
+        prefix = "PA"+str(i)
+        input_files_raw             = prefix+"/PGM/"+"Pat"+str(i)+"_inspi1"             # For metadata only here
+        pgm_files_raw, _            = pgm2array(input_files_raw)
+        metadata                    = get_metada_PGM(
+                                                        input_file        = pgm_files_raw[0],
+                                                        metadata_fields   = ["Rows", "Columns"]
+                                                    )
+        metadata.append(len(pgm_files_raw))
+        metadata = [int(meta) for meta in metadata]
+        metadatas.append(metadata)
+
+
+
+    # Compute scaling factor for each image
+    meta_array = np.array(metadatas)
+    min_xy = min(meta_array[:,0])
+    min_z = min(meta_array[:,2])
+
+    target = np.array([min_xy,min_xy,min_z]) 
+
+    scaling_factors = (meta_array/target).tolist()
+
+
+    # rescale all image
+    for i in Patients_Ids:
+        prefix                      = "PA"+str(i)
+        # Create copy of original sized image
+        initial_image1 = prefix+"/Image_Binary_blurred_01.vti"
+        command_cp_clone1 = "cp "+initial_image1+" "+prefix+"/Image_Binary_blurred_scaled_01.vti"
+        initial_image2 = prefix+"/Image_Binary_blurred_00.vti"
+        command_cp_clone2 = "cp "+initial_image2+" "+prefix+"/Image_Binary_blurred_scaled_00.vti"
+        os.system(command_cp_clone1)
+        os.system(command_cp_clone2)
+        print("Patient "+prefix+" cloned")
+
+
+
+        dwarp.compute_downsampled_images(
+                                        images_folder           = "./"+prefix+"/", 
+                                        images_basename         = "Image_Binary_blurred_scaled",
+                                        downsampling_factors    = scaling_factors[i-1]
+                                        )
+
+
+
+
+
+
+
 # Put one lung to -100 and the other to +100
-# create_LL_RL_binary(
-#         Patients_Ids    = Patients_Ids,
-#         input_name      = "_Binary",
-#         output_name     = "_Binary_LL_RL")
+create_LL_RL_binary(
+        Patients_Ids    = Patients_Ids,
+        input_name      = "_Binary",
+        output_name     = "_Binary_LL_RL")
 
 
 # Blur signed lung binaries
-# blur_vti(
-#         Patients_Ids    = Patients_Ids,
-#         input_name      = "_Binary_LL_RL",
-#         output_name     = "_Binary_LL_RL_blurred")
+blur_vti(
+        Patients_Ids    = Patients_Ids,
+        input_name      = "_Binary_LL_RL",
+        output_name     = "_Binary_LL_RL_blurred")
 
 
-# # thresholds blurred signed lung binaries
-# threshold_blurred_LL_RL(
-#         Patients_Ids    = Patients_Ids,
-#         input_name      = "_Binary_LL_RL_blurred",
-#         output_name     = "_Binary_LL_RL_blurred_thrshld")
+# thresholds blurred signed lung binaries
+threshold_blurred_LL_RL(
+        Patients_Ids    = Patients_Ids,
+        input_name      = "_Binary_LL_RL_blurred",
+        output_name     = "_Binary_LL_RL_blurred_thrshld")
 
 #### STRAT1 -
 match strategy:
@@ -667,13 +651,21 @@ match strategy:
             from_threshold_to_gradually_threshold(patient, "_Binary_LL_RL_blurred_thrshld", "_thrshld_external_gradient")
 
 
+        tracking_images_base_name = "_thrshld_external_gradient"
+        # Final blur
+        blur_vti(
+                Patients_Ids    = Patients_Ids,
+                input_name      = tracking_images_base_name,
+                output_name     = tracking_images_base_name+"_blurred",
+                radius          = 2, 
+                std             = 2)
         # # Copy initial image and target images to right names and folders
-        prepare_pairs_images(Patients_Ids, "_thrshld_external_gradient")
+        prepare_pairs_images(Patients_Ids, tracking_images_base_name+"_blurred")
 
         for patient in Patients_Ids:
         # Convert to unsigned char the vti (effectively rescaling the voxel values), otherwise the kernel crashes
-            vti_unsigned_char(patient,"_thrshld_external_gradient_00")
-            vti_unsigned_char(patient,"_thrshld_external_gradient_01")
+            vti_unsigned_char(patient,tracking_images_base_name+"_blurred_00")
+            vti_unsigned_char(patient,tracking_images_base_name+"_blurred_01")
 
             # vti_int8(patient,"_thrshld_external_gradient_00")
             # vti_int8(patient,"_thrshld_external_gradient_01")

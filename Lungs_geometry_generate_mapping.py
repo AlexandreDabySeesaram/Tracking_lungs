@@ -60,13 +60,14 @@ def reduced_kiematics(patient,lung, mesh, tol=1e-6):
             images_folder                               = destination_path+prefix,
             # images_basename                             = "Image_Binary_blurred",
             # images_basename                             = prefix+"_INT_Binary_LL_RL_blurred_thrshld",
-            # images_basename                             = prefix+"_INT_Binary_LL_RL_blurred_thrshld_blurred",
-            images_basename                             = prefix+"_INT_thrshld_external_gradient",
+            # images_basename                             = prefix+"_INT_thrshld_external_gradient",
+            images_basename                             = prefix+"_INT_thrshld_external_gradient_blurred",
+            # images_basename                             = prefix+"_INT_thrshld_external_gradient",
             # images_basename                             = prefix+"_thrshld_external_gradient",
             images_ext                                  = "vti",
             mesh                                        = mesh,
             images_quadrature                           = 6,
-            n_iter_max                                  = 1000,
+            n_iter_max                                  = 1500,
             regul_poisson                               = 0.3,
             tangent_type                                = "Idef",
             nonlinearsolver                             = "reduced_kinematic_newton",
@@ -92,20 +93,20 @@ def tracking(patient,lung, mesh, tol=1e-3, regul = 0.5):
             images_folder                               = destination_path+prefix,
             # images_basename                             = "Image_Binary_blurred",
             # images_basename                             = prefix+"_INT_Binary_LL_RL_blurred_thrshld",
-            # images_basename                             = prefix+"_INT_Binary_LL_RL_blurred_thrshld_blurred",
-            images_basename                             = prefix+"_INT_thrshld_external_gradient",
+            # images_basename                             = prefix+"_INT_thrshld_external_gradient",
+            images_basename                             = prefix+"_INT_thrshld_external_gradient_blurred",
+            # images_basename                             = prefix+"_INT_thrshld_external_gradient",
             # images_basename                             = prefix+"_thrshld_external_gradient",
             images_ext                                  = "vti",
             mesh                                        = mesh,
             n_iter_max                                  = 1000,
             tangent_type                                = "Idef",
             nonlinearsolver                             = "newton",
-            regul_types                                 = [ "continuous-equilibrated"],         #"discrete-mesh",  "continuous-equilibrated", "discrete-tractions-normal", "continuous-equilibrated", "discrete-tractions-tangential", "continuous-hyperelastic" "continuous-hyperelastic",
+            regul_types                                 = [ "continuous-hyperelastic"],         #"discrete-mesh",  "continuous-equilibrated", "discrete-tractions-normal", "continuous-equilibrated", "discrete-tractions-tangential", "continuous-hyperelastic" "continuous-hyperelastic",
             regul_model                                 = "ogdenciarletgeymonatneohookeanmooneyrivlin",
-            regul_levels                                = [0.1],
-            regul_poisson                               = 0.3,
+            regul_levels                                = [regul],
+            regul_poisson                               = 0.0,
             images_quadrature                           = 6,
-            images_quadrature_from                      = "points_count",
             relax_type                                  = "backtracking",
             tol_dU                                      = tol,
             write_VTU_files                             = True,
@@ -121,12 +122,15 @@ def tracking(patient,lung, mesh, tol=1e-3, regul = 0.5):
 
 
 N_patients = 9
-Patients_Ids = list(range(1,  N_patients + 1))
-Patients_Ids.remove(1)
-Patients_Ids.remove(3)
-Patients_Ids.remove(4)
-Patients_Ids.remove(6)
+# Patients_Ids = list(range(1,  N_patients + 1))
+# Patients_Ids.remove(1)
+# # Patients_Ids.remove(3)
+# # Patients_Ids.remove(4)
+# # Patients_Ids.remove(6)
 
+
+
+# Patients_Ids.remove(2)
 
 
 
@@ -142,17 +146,17 @@ for lung in Lungs:
             mesh = mesh_LL
         case 'RL':
             mesh = mesh_RL
-    initial_scaling(mesh, lung, coef =0.2)
+    # initial_scaling(mesh, lung, coef =0.5)
     for patient in Patients_Ids:
-        reduced_kiematics(
-                patient                                 = patient,
-                lung                                    = lung,
-                mesh                                    = mesh,
-                tol                                     = 1e-6)
+        # reduced_kiematics(
+        #         patient                                 = patient,
+        #         lung                                    = lung,
+        #         mesh                                    = mesh,
+        #         tol                                     = 1e-6)
 
         tracking(
                 patient                                 = patient,
                 lung                                    = lung,
                 mesh                                    = mesh,
                 tol                                     = 1e-6,
-                regul                                   = 0.5)
+                regul                                   = 0.3)
