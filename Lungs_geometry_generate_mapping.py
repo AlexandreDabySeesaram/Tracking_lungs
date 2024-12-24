@@ -45,14 +45,21 @@ def initial_scaling(mesh, lung, coef =-0.4):
     z_mid = center_gravity[2]
 
     ## Write down reduced_kinematics initialisation file
-    reduced_disp_initial_scaling = alpha*np.array([[-x_mid,-y_mid,-z_mid,1,1,1]])               # Reduced displacement for the 6 modes reduced-kinematics
+    reduced_disp_initial_scaling = alpha*np.array([[-x_mid,-y_mid,-z_mid,0,0,0,1,1,1,0,0,0]])               # Reduced displacement for the 6 modes (3 translation and 3 rotations) reduced-kinematics
+    print(f"shape of initial reduced disp vector befor cat {reduced_disp_initial_scaling.shape}")
+
+    complementary_dofs = np.array([(12-reduced_disp_initial_scaling.shape[1])*[0]])
+    print(f"shape of initial reduced compl {complementary_dofs.shape}")
+                        # Compute the missing coefficients for the rotation and shear modes
+    reduced_disp_initial_scaling = np.hstack((reduced_disp_initial_scaling, complementary_dofs))
+    print(f"shape of initial reduced disp vector is {reduced_disp_initial_scaling.shape}")
     np.savetxt(saving_name_initial_scalaing, reduced_disp_initial_scaling)                      # Save the reduced displacements
 
 #%% Define tracking functions
 
 destination_path = "./"                                                                         #Root path for patients solution folders
 
-def reduced_kiematics(image_base_name, patient,lung, mesh, tol=1e-6, images_quadrature = 6):
+def reduced_kiematics(image_base_name, patient,lung, mesh, tol=1e-6, images_quadrature = 6, reduced_kinematics_model = "translation+rotation+scaling+shear"):
 
    
     prefix = "PA"+str(patient)
@@ -60,23 +67,18 @@ def reduced_kiematics(image_base_name, patient,lung, mesh, tol=1e-6, images_quad
             working_folder                              = destination_path+prefix,
             working_basename                            = "thrshd_mapping_reduced_kinematics"+'_'+prefix+'_'+lung,
             images_folder                               = destination_path+prefix,
-            # images_basename                             = "Image_Binary_blurred",
-            # images_basename                             = prefix+"_INT_Binary_LL_RL_blurred_thrshld",
-            # images_basename                             = prefix+"_INT_thrshld_external_gradient",
             images_basename                             = prefix+image_base_name,
-            # images_basename                             = prefix+"_INT_thrshld_external_gradient",
-            # images_basename                             = prefix+"_thrshld_external_gradient",
             images_ext                                  = "vti",
             mesh                                        = mesh,
+            kinematics_type                             = "reduced",
+            reduced_kinematics_model                    = reduced_kinematics_model,
             images_quadrature                           = 6,
             n_iter_max                                  = 1500,
             regul_poisson                               = 0.3,
-            tangent_type                                = "Idef",
-            nonlinearsolver                             = "reduced_kinematic_newton",
             regul_type                                  = regul_type,
             regul_model                                 = regul_model,
             regul_level                                 = regul_level,
-            relax_type                                  = "constant",
+            relax_type                                  ="backtracking",
             tol_dU                                      = tol,
             continue_after_fail                         = 1,
             write_VTU_files                             = True,
@@ -89,16 +91,10 @@ def reduced_kiematics(image_base_name, patient,lung, mesh, tol=1e-6, images_quad
 def tracking(patient,lung, mesh, tol=1e-3, regul = 0.5):
     prefix = "PA"+str(patient)
     dwarp.warp(
-            # w_char_func                                 = False, # 
             working_folder                              = destination_path+prefix,
             working_basename                            = "thrshd_mapping"+'_'+prefix+'_'+lung,
             images_folder                               = destination_path+prefix,
-            # images_basename                             = "Image_Binary_blurred",
-            # images_basename                             = prefix+"_INT_Binary_LL_RL_blurred_thrshld",
-            # images_basename                             = prefix+"_INT_thrshld_external_gradient",
             images_basename                             = prefix+"_INT_thrshld_external_gradient_blurred",
-            # images_basename                             = prefix+"_INT_thrshld_external_gradient",
-            # images_basename                             = prefix+"_thrshld_external_gradient",
             images_ext                                  = "vti",
             mesh                                        = mesh,
             n_iter_max                                  = 1000,
@@ -202,7 +198,7 @@ Lungs = ['RL','LL']
 Lungs = ['RL','LL']
 
 
-Patients_Ids = [2]
+Patients_Ids = [5]
 
 for lung in Lungs:
     match lung:
@@ -210,18 +206,20 @@ for lung in Lungs:
             mesh = mesh_LL
         case 'RL':
             mesh = mesh_RL
-    # initial_scaling(mesh, lung, coef =0.5)
+    initial_scaling(mesh, lung, coef =-0.2)
     for patient in Patients_Ids:
-        # reduced_kiematics(
-                # image_base_name                         = "_INT_thrshld_external_gradient_blurred"
-                # patient                                 = patient,
-        #         lung                                    = lung,
-        #         mesh                                    = mesh,
-        #         tol                                     = 1e-6)
-
-        tracking(
+        reduced_kiematics(
+                image_base_name                         = "_INT_thrshld_external_gradient_blurred",
                 patient                                 = patient,
                 lung                                    = lung,
                 mesh                                    = mesh,
                 tol                                     = 1e-6,
-                regul                                   = 0.3)
+                reduced_kinematics_model                = "translation+rotation+scaling+shear"
+                )
+
+        # tracking(
+        #         patient                                 = patient,
+        #         lung                                    = lung,
+        #         mesh                                    = mesh,
+        #         tol                                     = 1e-6,
+        #         regul                                   = 0.3)
