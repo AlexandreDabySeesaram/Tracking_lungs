@@ -26,7 +26,7 @@ else:
 
 #%% Create initial scaling 
 # The objective is to create an initial scaled mapping that lies within all possible rib cages to help with tracking
-def initial_scaling(mesh, lung, coef =-0.4):
+def initial_scaling(mesh, lung, coef =-0.4, reduced_kinematics_model = "translation+rotation+scaling+shear"):
     saving_name_initial_scalaing = "initial_scaling_"+lung+".dat"
     alpha = coef                                                                                # Scaling factor
 
@@ -45,14 +45,19 @@ def initial_scaling(mesh, lung, coef =-0.4):
     z_mid = center_gravity[2]
 
     ## Write down reduced_kinematics initialisation file
-    reduced_disp_initial_scaling = alpha*np.array([[-x_mid,-y_mid,-z_mid,0,0,0,1,1,1,0,0,0]])               # Reduced displacement for the 6 modes (3 translation and 3 rotations) reduced-kinematics
-    print(f"shape of initial reduced disp vector befor cat {reduced_disp_initial_scaling.shape}")
+    reduced_disp_initial_scaling_list = [-x_mid,-y_mid,-z_mid]                            # List of initial reduced displacements
 
-    complementary_dofs = np.array([(12-reduced_disp_initial_scaling.shape[1])*[0]])
-    print(f"shape of initial reduced compl {complementary_dofs.shape}")
-                        # Compute the missing coefficients for the rotation and shear modes
-    reduced_disp_initial_scaling = np.hstack((reduced_disp_initial_scaling, complementary_dofs))
-    print(f"shape of initial reduced disp vector is {reduced_disp_initial_scaling.shape}")
+    if ("rotation" in reduced_kinematics_model):
+        reduced_disp_initial_scaling_list+=[0,0,0]
+
+    reduced_disp_initial_scaling_list+=[1,1,1]
+
+    if ("shear" in reduced_kinematics_model):
+        reduced_disp_initial_scaling_list+=[0,0,0]
+
+    reduced_disp_initial_scaling = alpha*np.array([reduced_disp_initial_scaling_list])               # Reduced displacement for the 6 modes (3 translation and 3 rotations) reduced-kinematics
+
+    print(f"shape of initial reduced displacement is {reduced_disp_initial_scaling.shape}")
     np.savetxt(saving_name_initial_scalaing, reduced_disp_initial_scaling)                      # Save the reduced displacements
 
 #%% Define tracking functions
@@ -197,7 +202,7 @@ N_patients = 9
 Lungs = ['RL','LL']
 Lungs = ['RL','LL']
 
-
+reduced_kinematics_model = "translation+scaling+shear"
 Patients_Ids = [5]
 
 for lung in Lungs:
@@ -206,7 +211,7 @@ for lung in Lungs:
             mesh = mesh_LL
         case 'RL':
             mesh = mesh_RL
-    initial_scaling(mesh, lung, coef =-0.2)
+    initial_scaling(mesh, lung, coef =-0.2, reduced_kinematics_model = reduced_kinematics_model)
     for patient in Patients_Ids:
         reduced_kiematics(
                 image_base_name                         = "_INT_thrshld_external_gradient_blurred",
@@ -214,7 +219,7 @@ for lung in Lungs:
                 lung                                    = lung,
                 mesh                                    = mesh,
                 tol                                     = 1e-6,
-                reduced_kinematics_model                = "translation+rotation+scaling+shear"
+                reduced_kinematics_model                = reduced_kinematics_model
                 )
 
         # tracking(
