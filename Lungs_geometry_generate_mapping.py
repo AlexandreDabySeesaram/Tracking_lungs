@@ -69,6 +69,7 @@ def reduced_kiematics(image_base_name, patient,lung, mesh, tol=1e-6, images_quad
    
     prefix = "PA"+str(patient)
     dwarp.warp(
+            images_char_func                            = False,
             working_folder                              = destination_path+prefix,
             working_basename                            = "thrshd_mapping_reduced_kinematics"+'_'+prefix+'_'+lung,
             images_folder                               = destination_path+prefix,
@@ -103,7 +104,6 @@ def tracking(patient,lung, mesh, tol=1e-3, regul = 0.5, images_quadrature = 6):
             images_ext                                  = "vti",
             mesh                                        = mesh,
             n_iter_max                                  = 1000,
-            tangent_type                                = "Idef",
             nonlinearsolver                             = "newton",
             regul_types                                 = [ "continuous-hyperelastic"],         #"discrete-mesh",  "continuous-equilibrated", "discrete-tractions-normal", "continuous-equilibrated", "discrete-tractions-tangential", "continuous-hyperelastic" "continuous-hyperelastic",
             regul_model                                 = "ogdenciarletgeymonatneohookeanmooneyrivlin",
@@ -166,7 +166,7 @@ def warp_and_blur(patient, attenuation_factors, lung, mesh):
                 ###### Check that .dat is saved in reduced kinematics for latter initialisation check name for initial .dat files
         else:
             dwarp.warp(
-                working_folder                  = working_folder,
+                images_char_func                = False,
                 working_basename                = working_basename+"_downsampled="+str(attenuation_factor),
                 images_folder                   = images_folder,
                 images_basename                 = images_basename_blur_factor,
@@ -212,21 +212,21 @@ for lung in Lungs:
             mesh = mesh_LL
         case 'RL':
             mesh = mesh_RL
-    initial_scaling(mesh, lung, coef =0.1, reduced_kinematics_model = reduced_kinematics_model)
+    initial_scaling(mesh, lung, coef =0.9, reduced_kinematics_model = reduced_kinematics_model)
     for patient in Patients_Ids:
-        reduced_kiematics(
-                image_base_name                         = "_INT_thrshld_external_gradient_blurred",
-                patient                                 = patient,
-                lung                                    = lung,
-                mesh                                    = mesh,
-                tol                                     = 1e-6,
-                images_quadrature                       = 1,
-                reduced_kinematics_model                = reduced_kinematics_model
-                )
-
-        # tracking(
+        # reduced_kiematics(
+        #         image_base_name                         = "_INT_thrshld_external_gradient_blurred",
         #         patient                                 = patient,
         #         lung                                    = lung,
         #         mesh                                    = mesh,
         #         tol                                     = 1e-6,
-        #         regul                                   = 0.3)
+        #         images_quadrature                       = 1,
+        #         reduced_kinematics_model                = reduced_kinematics_model
+        #         )
+
+        tracking(
+                patient                                 = patient,
+                lung                                    = lung,
+                mesh                                    = mesh,
+                tol                                     = 1e-6,
+                regul                                   = 0.3)
