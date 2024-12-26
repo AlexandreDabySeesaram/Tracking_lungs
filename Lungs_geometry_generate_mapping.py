@@ -93,7 +93,7 @@ def reduced_kiematics(image_base_name, patient,lung, mesh, tol=1e-6, images_quad
             print_iterations                            =1) 
 
 
-def tracking(patient,lung, mesh, tol=1e-3, regul = 0.5):
+def tracking(patient,lung, mesh, tol=1e-3, regul = 0.5, images_quadrature = 6):
     prefix = "PA"+str(patient)
     dwarp.warp(
             working_folder                              = destination_path+prefix,
@@ -146,6 +146,7 @@ def warp_and_blur(patient, attenuation_factors, lung, mesh):
 
         if i >=1 :
             dwarp.warp(
+                images_char_func                = False,
                 working_folder                  = working_folder,
                 working_basename                = working_basename+"_downsampled="+str(attenuation_factor),
                 images_folder                   = images_folder,
@@ -200,9 +201,9 @@ N_patients = 9
 
 
 Lungs = ['RL','LL']
-Lungs = ['RL','LL']
+Lungs = ['RL']
 
-reduced_kinematics_model = "translation+scaling+shear"
+reduced_kinematics_model = "translation+scaling"
 Patients_Ids = [5]
 
 for lung in Lungs:
@@ -211,7 +212,7 @@ for lung in Lungs:
             mesh = mesh_LL
         case 'RL':
             mesh = mesh_RL
-    initial_scaling(mesh, lung, coef =-0.2, reduced_kinematics_model = reduced_kinematics_model)
+    initial_scaling(mesh, lung, coef =0.1, reduced_kinematics_model = reduced_kinematics_model)
     for patient in Patients_Ids:
         reduced_kiematics(
                 image_base_name                         = "_INT_thrshld_external_gradient_blurred",
@@ -219,6 +220,7 @@ for lung in Lungs:
                 lung                                    = lung,
                 mesh                                    = mesh,
                 tol                                     = 1e-6,
+                images_quadrature                       = 1,
                 reduced_kinematics_model                = reduced_kinematics_model
                 )
 
