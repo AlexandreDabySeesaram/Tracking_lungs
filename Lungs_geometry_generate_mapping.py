@@ -71,7 +71,8 @@ def reduced_kiematics(image_base_name, patient,lung, mesh, tol=1e-6, images_quad
     dwarp.warp(
             images_char_func                            = False,
             working_folder                              = destination_path+prefix,
-            working_basename                            = "thrshd_mapping_reduced_kinematics"+'_'+prefix+'_'+lung,
+            # working_basename                            = "thrshd_mapping_reduced_kinematics"+'_'+prefix+'_'+lung,
+            working_basename                            = "TEST_mapping_reduced_kinematics"+'_'+prefix+'_'+lung,
             images_folder                               = destination_path+prefix,
             images_basename                             = prefix+image_base_name,
             images_ext                                  = "vti",
@@ -79,7 +80,7 @@ def reduced_kiematics(image_base_name, patient,lung, mesh, tol=1e-6, images_quad
             kinematics_type                             = "reduced",
             reduced_kinematics_model                    = reduced_kinematics_model,
             images_quadrature                           = 6,
-            n_iter_max                                  = 1500,
+            n_iter_max                                  = 10,
             regul_poisson                               = 0.3,
             regul_type                                  = regul_type,
             regul_model                                 = regul_model,
@@ -109,7 +110,7 @@ def tracking(patient,lung, mesh, tol=1e-3, regul = 0.5, images_quadrature = 6):
             regul_model                                 = "ogdenciarletgeymonatneohookeanmooneyrivlin",
             regul_levels                                = [regul],
             regul_poisson                               = 0.0,
-            images_quadrature                           = 6,
+            images_quadrature                           = 8,
             relax_type                                  = "backtracking",
             tol_dU                                      = tol,
             write_VTU_files                             = True,
@@ -135,7 +136,7 @@ def warp_and_blur(patient, attenuation_factors, lung, mesh):
     for i in range(len(attenuation_factors)):
         Create_data.gaussian_windowing(
                 working_folder                              = destination_path+prefix,
-                image_name                                  =prefix+common_basename,
+                image_name                                  = prefix+common_basename,
                 attenuation_factor                          = attenuation_factors[i],   
                 verbose                                     = True
                 )
@@ -202,8 +203,10 @@ N_patients = 9
 
 Lungs = ['RL','LL']
 Lungs = ['RL']
+# Lungs = ['LL']
 
-reduced_kinematics_model = "translation+scaling"
+
+reduced_kinematics_model = "translation+scaling+rotation"
 Patients_Ids = [5]
 
 for lung in Lungs:
@@ -214,19 +217,19 @@ for lung in Lungs:
             mesh = mesh_RL
     initial_scaling(mesh, lung, coef =0.9, reduced_kinematics_model = reduced_kinematics_model)
     for patient in Patients_Ids:
-        # reduced_kiematics(
-        #         image_base_name                         = "_INT_thrshld_external_gradient_blurred",
-        #         patient                                 = patient,
-        #         lung                                    = lung,
-        #         mesh                                    = mesh,
-        #         tol                                     = 1e-6,
-        #         images_quadrature                       = 1,
-        #         reduced_kinematics_model                = reduced_kinematics_model
-        #         )
-
-        tracking(
+        reduced_kiematics(
+                image_base_name                         = "_INT_thrshld_external_gradient_blurred",
                 patient                                 = patient,
                 lung                                    = lung,
                 mesh                                    = mesh,
                 tol                                     = 1e-6,
-                regul                                   = 0.3)
+                images_quadrature                       = 3,
+                reduced_kinematics_model                = reduced_kinematics_model
+                )
+
+        # tracking(
+        #         patient                                 = patient,
+        #         lung                                    = lung,
+        #         mesh                                    = mesh,
+        #         tol                                     = 1e-4,
+        #         regul                                   = 0.01)
