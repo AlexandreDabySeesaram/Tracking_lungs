@@ -240,7 +240,7 @@ for lung in Lungs:
         prefix = "PA"+str(patient)
         
         dwarp.blur_and_warp(
-                    attenuation_factors                         = [2,4,8],
+                    attenuation_factors                         = [8,16,32],
                     images_char_func                            = False,
                     working_folder                              = destination_path+prefix,
                     # working_basename                            = "thrshd_mapping_reduced_kinematics"+'_'+prefix+'_'+lung,
@@ -252,13 +252,13 @@ for lung in Lungs:
                     kinematics_type                             = "reduced",
                     reduced_kinematics_model                    = reduced_kinematics_model,
                     images_quadrature                           = 6,
-                    n_iter_max                                  = 10,
+                    n_iter_max                                  = 3,
                     regul_poisson                               = 0.3,
                     regul_type                                  = regul_type,
                     regul_model                                 = regul_model,
                     regul_level                                 = regul_level,
                     relax_type                                  ="backtracking",
-                    tol_dU                                      = 1e-3,
+                    tol_dU                                      = 1e-2,
                     continue_after_fail                         = 1,
                     write_VTU_files                             = True,
                     write_VTU_files_with_preserved_connectivity = True,
