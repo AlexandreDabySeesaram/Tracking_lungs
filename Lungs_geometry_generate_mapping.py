@@ -252,7 +252,7 @@ for lung in Lungs:
                     kinematics_type                             = "reduced",
                     reduced_kinematics_model                    = reduced_kinematics_model,
                     images_quadrature                           = 6,
-                    n_iter_max                                  = 3,
+                    n_iter_max                                  = 20,
                     regul_poisson                               = 0.3,
                     regul_type                                  = regul_type,
                     regul_model                                 = regul_model,
