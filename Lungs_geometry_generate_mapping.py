@@ -258,7 +258,7 @@ for lung in Lungs:
                     regul_model                                 = regul_model,
                     regul_level                                 = regul_level,
                     relax_type                                  ="backtracking",
-                    tol_dU                                      = 1e-2,
+                    tol_dU                                      = 1e-4,
                     continue_after_fail                         = 1,
                     write_VTU_files                             = True,
                     write_VTU_files_with_preserved_connectivity = True,
